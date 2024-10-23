@@ -1,0 +1,11 @@
+animal,has_whiskers,has_paws,has_claws,is_charismatic,has_ears,has_tail,live_birth,is_predator,is_domesticated,is_pink,is_brown,has_fur,flies,lives_in_water,has_wings
+cat,1,1,1,0,1,1,1,0,1,0,0,1,0,0,0
+dog,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0
+bear,1,1,1,0,1,1,1,1,0,0,1,1,0,0,0
+squirrel,1,1,1,0,1,1,1,0,0,0,0,1,0,0,0
+platypus,0,1,1,0,0,1,0,0,0,0,1,1,0,1,0
+alligator,0,0,1,0,0,1,0,1,0,0,0,0,0,1,0
+salamander,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1
+penguin,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1
+flamingo,0,0,0,0,0,0,0,0,0,1,0,0,1,0,1
+eagle,0,0,1,0,0,0,0,1,0,0,1,0,1,0,1

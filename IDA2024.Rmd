@@ -1,0 +1,351 @@
+---
+title: "IDA 2024"
+output: html_document
+date: "2024-10-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+require(umap)
+require(papaja)
+require(Hmisc)
+require(ggimage)
+
+dwell_at_closing = 30
+
+```
+
+## First, the words
+
+## Compile all activations into a single dataframe (to subsequently compress)
+```{r}
+all_acts_list = list()
+
+for (filename in acts_files){
+  if (str_detect(filename, "\\.csv")){
+    
+    epoch = str_extract(filename, "(?<=acts_)\\d+(?=\\.csv)")
+        
+    acts = read_csv(filename, col_names = F) %>% 
+      mutate(word = words$word,
+             epoch = as.numeric(epoch)) %>% 
+      select(word, epoch, everything())
+    
+    all_acts_list[[epoch]] = acts
+    
+  }
+}
+
+pcs = prcomp(list_rbind(all_acts_list)[,3:102])$x %>% 
+  data.frame() %>% 
+  mutate(word = list_rbind(all_acts_list)$word,
+         epoch = list_rbind(all_acts_list)$epoch) %>% 
+  select(word, epoch, everything())
+
+max_PC1 = max(pcs$PC1) + 1
+max_PC2 = max(pcs$PC2) + 1
+min_PC1 = min(pcs$PC1) - 1
+min_PC2 = min(pcs$PC2) - 1
+
+
+plot = pcs %>% 
+    filter(epoch == max(pcs$epoch)) %>% 
+    ggplot(aes(PC1, PC2, label = word)) +
+    geom_label() +
+    ylim(c(min_PC2, max_PC2)) +
+    xlim(c(min_PC1, max_PC2)) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2") +
+    theme_apa()
+
+plot
+```
+
+### All the words
+```{r}
+for (e in sort(unique(pcs$epoch))){
+  
+  this_epoch = pcs %>% 
+    filter(epoch == e)
+  
+  plot = this_epoch %>% 
+    ggplot(aes(PC1, PC2, label = word)) +
+    geom_label(size = 2) +
+    ylim(c(min_PC2, max_PC2)) +
+    xlim(c(min_PC1, max_PC1)) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2") +
+    theme_apa()
+ 
+  filename = str_c("outputs/all_words/plot_", e, ".png")
+  
+  print(paste("Plot", e, "...done"))
+  ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+
+  if (e == max((pcs$epoch))){
+    
+    for (i in seq(dwell_at_closing)){
+      
+      filename = str_c("outputs/all_words/plot_", e + i, ".png")
+      
+      print(paste("Plot", e + i, "...done"))
+      ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+      
+      
+    }
+  }  
+    
+}
+```
+
+### "ing" words
+
+```{r}
+targets = tibble(word = c("things", "wings", "wing", "sings", "sing", "swings", "swing", "ding", "sting", "king", "ping"),
+                  condition = "ing") %>% 
+  rbind(tibble(word = c("sly", "rings", "yuck", "wrapped", "took", "troops", "trout", "screen", "woke", "fate"),
+                           condition = "control"))
+
+
+for (e in sort(unique(pcs$epoch))){
+  
+  this_epoch = pcs %>% 
+    filter(epoch == e) %>% 
+    right_join(targets)
+  
+  plot = this_epoch %>% 
+    ggplot(aes(PC1, PC2, label = word, fill = condition)) +
+    geom_label(size = 2) +
+    ylim(c(min_PC2, max_PC2)) +
+    xlim(c(min_PC1, max_PC1)) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2") +
+    scale_fill_manual(values = c("white", "goldenrod")) +
+    theme_apa() +
+    theme(legend.position = "none")
+ 
+  filename = str_c("outputs/ing/plot_", e, ".png")
+  
+  print(paste("Plot", e, "...done"))
+  ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+
+  if (e == max((pcs$epoch))){
+    
+    for (i in seq(dwell_at_closing)){
+      
+      filename = str_c("outputs/ing/plot_", e + i, ".png")
+      
+      print(paste("Plot", e + i, "...done"))
+      ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+      
+      
+    }
+  }  
+}
+
+
+#targets =  words$word#sample(words$word, 200)
+
+```
+
+
+
+### "br" words
+
+```{r}
+targets = tibble(word = c("brush", "brushed", "breeze", "breed", "bricks", "brick", "breed", "breeze", "broil", "broad"),
+                  condition = "br") %>% 
+  rbind(tibble(word = c("sly", "rings", "yuck", "wrapped", "took", "troops", "trout", "screen", "woke", "fate"),
+                           condition = "control"))
+
+for (e in sort(unique(pcs$epoch))){
+  
+  this_epoch = pcs %>% 
+    filter(epoch == e) %>% 
+    right_join(targets)
+  
+  plot = this_epoch %>% 
+    ggplot(aes(PC1, PC2, label = word, fill = condition)) +
+    geom_label(size = 2) +
+    ylim(c(min_PC2, max_PC2)) +
+    xlim(c(min_PC1, max_PC1)) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2") +
+    scale_fill_manual(values = c("coral", "white")) +
+    theme_apa() +
+    theme(legend.position = "none")
+  
+  
+ 
+  filename = str_c("outputs/br/plot_", e, ".png")
+  
+  print(paste("Plot", e, "...done"))
+  ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+
+  if (e == max((pcs$epoch))){
+    
+    for (i in seq(dwell_at_closing)){
+      
+      filename = str_c("outputs/br/plot_", e + i, ".png")
+      
+      print(paste("Plot", e + i, "...done"))
+      ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+}}}
+
+```
+
+
+
+```{r}
+targets = tibble(word = c("coin", "oil", "soil", "boil", "coin", "boiled", "point", "points", "spoiled", "spoils", "foil"),
+                  condition = "oi") %>% 
+  rbind(tibble(word = c("sly", "rings", "yuck", "wrapped", "took", "troops", "trout", "screen", "woke", "fate"),
+                           condition = "control"))
+
+for (e in sort(unique(pcs$epoch))){
+  
+  this_epoch = pcs %>% 
+    filter(epoch == e) %>% 
+    right_join(targets)
+  
+  plot = this_epoch %>% 
+    ggplot(aes(PC1, PC2, label = word, fill = condition)) +
+    geom_label(size = 2) +
+    ylim(c(min_PC2, max_PC2)) +
+    xlim(c(min_PC1, max_PC1)) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2") +
+    scale_fill_manual(values = c("white", "steelblue2")) +
+    theme_apa() +
+    theme(legend.position = "none")
+ 
+  filename = str_c("outputs/oi/plot_", e, ".png")
+  
+  print(paste("Plot", e, "...done"))
+  ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+
+  if (e == max((pcs$epoch))){
+    
+    for (i in seq(dwell_at_closing)){
+      
+      filename = str_c("outputs/oi/plot_", e + i, ".png")
+      
+      print(paste("Plot", e + i, "...done"))
+      ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+}}}
+
+```
+
+### Words with the letter "a"
+```{r}
+
+targets = words %>% 
+  filter(str_detect(word, "a")) %>% 
+  pull(word)
+
+
+
+```
+
+### Cluster dendrogram for words
+
+```{r}
+
+
+
+```
+
+
+
+
+## Now, the animals
+
+
+```{r}
+
+animal_acts_files = list.files('outputs/animals', full.names = T)
+animals = read_csv('data/animals.csv')
+
+animal_acts_list = list()
+
+for (filename in animal_acts_files){
+  if (str_detect(filename, "\\.csv")){
+    
+    epoch = str_extract(filename, "(?<=acts_)\\d+(?=\\.csv)")
+        
+    acts = read_csv(filename, col_names = F) %>% 
+      mutate(animal = animals$animal,
+             epoch = as.numeric(epoch)) %>% 
+      select(animal, epoch, everything())
+    
+    animal_acts_list[[epoch]] = acts
+    
+  }
+}
+
+pcs = prcomp(list_rbind(animal_acts_list)[,3:5])$x %>% 
+  data.frame() %>% 
+  mutate(animal = list_rbind(animal_acts_list)$animal,
+         epoch = list_rbind(animal_acts_list)$epoch) %>% 
+  select(animal, epoch, everything())
+
+
+for (e in sort(unique(pcs$epoch))){
+  
+  this_epoch = pcs %>% 
+    filter(epoch == e)
+  
+  plot = this_epoch %>% 
+    left_join(animal_images) %>% 
+    #filter(animal == "cat") %>% 
+    filter(animal %nin% c('salamander', 'alligator')) %>% 
+    ggplot(aes(PC1, PC2, label = animal)) +
+    #geom_image(aes(image = image), size = .35) +
+    geom_label(size = 2) +
+    ylim(c(-15, 15)) +
+    xlim(c(-15, 15)) +
+    labs(x = "Dimension 1",
+         y = "Dimension 2") +
+    theme_apa()
+ 
+  filename = str_c("outputs/animals/img/plot_", e, ".png")
+  
+  print(paste("Plot", e, "...done"))
+  ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+
+  if (e == max((pcs$epoch))){
+    
+    for (i in seq(dwell_at_closing)){
+      
+      filename = str_c("outputs/animals/img/plot_", e + i, ".png")
+      
+      print(paste("Plot", e + i, "...done"))
+      ggsave(filename, plot = plot, width = 6, height = 4, dpi = 300)
+      
+      
+    }
+  }  
+    
+}
+
+
+```
+
+
+### Cluster dendrogram for animals
+
+
+```{r}
+
+dists = dist(scale(animal_acts_list[["50"]][, 2:4])) %>% 
+  mutate(animal = animal_acts_list[["50"]]$animal)
+
+cluster = hclust()
+
+
+plot(as.dendrogram(cluster))
+
+
+```
+

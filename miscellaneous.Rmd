@@ -1,0 +1,32 @@
+---
+title: "Miscellaneous"
+output: html_document
+date: "2024-10-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+require(papaja)
+
+```
+
+
+```{r}
+
+plot = tibble(x = rnorm(300), y = rnorm(300)) %>% 
+  ggplot(aes(x, y)) +
+  #geom_point() +
+  labs(x = "Dimension 1",
+       y = "Dimension 2") +
+  theme_apa() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank())
+
+plot %>% 
+  ggsave(filename = "blank_2d_plot.png")
+  
+
+
+```
+
